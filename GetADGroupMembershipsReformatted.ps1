@@ -7,11 +7,12 @@ $outputPath = "$env:USERPROFILE\Desktop\AD_Users_and_Their_Groups.csv"
 # Create a hashtable to map users to groups
 $userGroupMap = @{}
 
-# Get all AD groups
-$groups = Get-ADGroup -Filter * -Properties Members
+# Get all AD groups with their members and description
+$groups = Get-ADGroup -Filter * -Properties Members, Description
 
 foreach ($group in $groups) {
     $groupName = $group.Name
+    $groupDescription = $group.Description
 
     try {
         $members = Get-ADGroupMember -Identity $group -Recursive -ErrorAction Stop
@@ -25,7 +26,8 @@ foreach ($group in $groups) {
                         Groups = @()
                     }
                 }
-                $userGroupMap[$member.SamAccountName].Groups += $groupName
+                # Store both group name and description
+                $userGroupMap[$member.SamAccountName].Groups += "$groupName (`"$groupDescription`")"
             }
         }
     } catch {
